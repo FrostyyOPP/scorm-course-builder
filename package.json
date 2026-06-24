@@ -15,11 +15,11 @@
     "type": "git",
     "url": "git+https://github.com/FrostyyOPP/scorm-course-builder.git"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
-    "adm-zip": "^0.5.16",
     "archiver": "^7.0.1",
-    "commander": "^12.1.0",
-    "h5p-standalone": "^3.8.2",
     "js-yaml": "^4.2.0",
     "mammoth": "^1.8.0"
   }

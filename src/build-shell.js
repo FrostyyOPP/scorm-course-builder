@@ -13,7 +13,7 @@ const path = require('path');
 const os = require('os');
 const { parseQuiz, parseReading } = require('./parse-docx');
 const { parseOutline, resolveItemFile } = require('./parse-outline');
-const { buildManifest, listFiles, zipDir, slugify } = require('./pack-scorm');
+const { buildManifest, listFiles, zipDir, slugify } = require('./scorm');
 const { ACCENTS } = require('./brand');
 
 const SHELL = path.join(__dirname, 'shell');

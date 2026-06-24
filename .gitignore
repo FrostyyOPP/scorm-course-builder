@@ -18,10 +18,6 @@ input/
 *.vtt
 *.h5p
 
-# vendored third-party H5P libraries (fetched separately; large)
-libraries/
-samples/
-
 # editor / OS / local config
 .claude/
 .DS_Store

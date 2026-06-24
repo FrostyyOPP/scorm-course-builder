@@ -1,8 +1,23 @@
-# course-builder
+# scorm-course-builder
 
 Turn a folder of course content into a **branded, accessible SCORM 1.2 course** — no manual
 authoring tool. An **outline** drives the structure; videos, readings, and quizzes come from
 their own folders; the finished SCORM 1.2 `.zip` is written straight into the course folder.
+
+---
+
+## Install (new machine)
+
+Requires **Node.js 18+** and **git**.
+
+```bash
+git clone https://github.com/FrostyyOPP/scorm-course-builder.git
+cd scorm-course-builder
+npm install
+```
+
+That's the whole setup — no build step, no extra downloads. Then point it at a course folder
+(below) and run `node src/index.js <folder>`.
 
 ---
 
@@ -110,19 +125,20 @@ one question per screen → score summary.** Styled to the Course Visual Style G
 
 | Path | Purpose |
 |---|---|
-| `src/index.js` | CLI — course folder → SCORM 1.2 zip |
-| `src/parse-outline.js` | outline → structure + file resolution |
+| `src/index.js` | CLI — course folder → SCORM 1.2 zip (auto-routes Markdown vs `.docx` outline) |
+| `src/parse-outline.js` | Markdown outline → structure + file resolution |
+| `src/parse-outline-docx.js` | Starweaver `.docx` outline → titles |
 | `src/parse-docx.js` | Word docs → quiz/reading data (`mammoth`) |
-| `src/build-shell.js` | assemble the accessible course package |
+| `src/build-shell.js` | assemble + package the accessible SCORM course |
+| `src/build-full.js` | full multi-module course from a Starweaver folder |
+| `src/scorm.js` | SCORM 1.2 manifest + zip helpers |
 | `src/shell/player.js` · `styles.css` · `scorm-api.js` | the course runtime (player, brand CSS, SCORM) |
 | `src/brand.js` | design tokens from the style guide |
-| `example-project/` | a complete working example |
-
-> `build-cp.js` / `build-course.js` / `pack-scorm.js` are earlier **H5P**-based builders, kept for reference. The custom shell (above) is the primary tool.
+| `example-project/` | folder-layout template |
 
 ---
 
 ## Known gaps / next
-- Caption `.vtt` files must be supplied for full WCAG video compliance.
-- Outline parser currently reads Markdown; a `.docx` outline parser can be added to match an existing outline format.
+- Caption `.vtt` files must be supplied (or auto-generated) for full WCAG video compliance.
+- Large media → large zips; add a video-compression step if your LMS caps upload size.
 - Quiz type is single-choice; multiple-answer / other types are additive.
