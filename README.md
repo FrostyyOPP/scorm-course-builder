@@ -134,11 +134,32 @@ one question per screen → score summary.** Styled to the Course Visual Style G
 | `src/scorm.js` | SCORM 1.2 manifest + zip helpers |
 | `src/shell/player.js` · `styles.css` · `scorm-api.js` | the course runtime (player, brand CSS, SCORM) |
 | `src/brand.js` | design tokens from the style guide |
+| `src/make-captions.js` | generate WebVTT captions for the videos (offline, whisper.cpp) |
 | `example-project/` | folder-layout template |
 
 ---
 
+## Captions (WCAG 1.2.2)
+
+Generate caption files for your videos with one command — offline, on-device:
+
+```bash
+# one-time setup
+brew install ffmpeg whisper-cpp
+mkdir -p models && curl -L -o models/ggml-small.en.bin \
+  https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin
+
+# transcribe every video in the course folder
+node src/make-captions.js "/path/to/Your Course Folder"
+```
+
+This writes `captions/<videoname>.vtt` into the course folder. Re-run the build and the
+captions are embedded automatically (the builder warns for any video still missing one).
+Transcription runs ~5× faster than real time on Apple Silicon. Auto-captions are accurate
+enough for WCAG; proofread the `.vtt` files if you need broadcast-grade wording.
+
+---
+
 ## Known gaps / next
-- Caption `.vtt` files must be supplied (or auto-generated) for full WCAG video compliance.
 - Large media → large zips; add a video-compression step if your LMS caps upload size.
 - Quiz type is single-choice; multiple-answer / other types are additive.
