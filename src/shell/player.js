@@ -9,12 +9,20 @@
   var answered = {}; // questionScreenIndex -> { chosen, correct }
 
   var stage = document.getElementById('stage');
+  var slide = document.getElementById('slide');
   var fill = document.getElementById('progress-fill');
   var rail = document.getElementById('progress-rail');
   var counter = document.getElementById('counter');
   var backBtn = document.getElementById('back');
   var nextBtn = document.getElementById('next');
   var live = document.getElementById('live');
+  var menuEl = document.getElementById('menu');
+  var menuToggle = document.getElementById('menu-toggle');
+  var transcriptPanel = document.getElementById('transcript');
+  var transcriptToggle = document.getElementById('transcript-toggle');
+  var transcriptClose = document.getElementById('transcript-close');
+  var transcriptBody = document.getElementById('transcript-body');
+  var visited = {}; // screen index -> true
 
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function el(html){var d=document.createElement('div');d.innerHTML=html.trim();return d.firstChild;}
@@ -46,11 +54,12 @@
   // ---------- render ----------
   function render(){
     var s = screens[i];
-    stage.innerHTML='';
+    visited[i] = true;
+    slide.innerHTML='';
     var node = ({cover:renderCover,module:renderModule,lesson:renderLesson,video:renderVideo,reading:renderReading,
                  quizIntro:renderQuizIntro,question:renderQuestion,summary:renderSummary}[s.type]||function(){return el('<section class="screen"></section>');})(s);
-    stage.appendChild(node);
-    window.scrollTo(0,0);
+    slide.appendChild(node);
+    slide.scrollTop = 0;
 
     var pct = Math.round((i/(screens.length-1))*100);
     fill.style.width = pct+'%';
@@ -61,11 +70,87 @@
     nextBtn.disabled = i>=screens.length-1 || (isQ && !answered[i]);
     nextBtn.textContent = i>=screens.length-1 ? 'Finish' : 'Next';
 
+    updateMenuHighlight();
+    if(!transcriptPanel.hidden) fillTranscript();
+
     // focus the heading for screen-reader + keyboard users
     var h = node.querySelector('[data-focus]');
     if(h){ h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
     announce('Screen '+(i+1)+' of '+screens.length+'. '+screenLabel(s));
     persist();
+  }
+
+  // ---------- menu sidebar ----------
+  function buildMenu(){
+    // group screens into modules -> lessons -> items; quiz collapses to one entry
+    var html = '';
+    html += menuItemHtml(0, 'Overview', 'top');
+    var curMod = null, curLes = null, quizDone = false;
+    for (var k=1; k<screens.length; k++){
+      var s = screens[k];
+      if(s.type==='module'){ html += '<div class="menu-module">'+esc(s.title||('Module'))+'</div>'; curMod=k; curLes=null; }
+      else if(s.type==='lesson'){ html += '<div class="menu-lesson">'+esc(s.title||'Lesson')+'</div>'; curLes=k; }
+      else if(s.type==='video' || s.type==='reading'){ html += menuItemHtml(k, s.title || cap(s.type)); }
+      else if(s.type==='quizIntro'){ html += menuItemHtml(k, s.title || 'Graded Quiz'); quizDone=true; }
+      else if(s.type==='summary'){ html += menuItemHtml(k, 'Results', 'top'); }
+      // individual questions are intentionally not listed
+    }
+    menuEl.innerHTML = html;
+    [].slice.call(menuEl.querySelectorAll('.menu-item')).forEach(function(btn){
+      btn.addEventListener('click', function(){ jumpTo(parseInt(btn.getAttribute('data-i'),10)); });
+    });
+  }
+  function menuItemHtml(idx, label, cls){
+    return '<button class="menu-item'+(cls?' '+cls:'')+'" data-i="'+idx+'" type="button">'+
+      '<span class="mk" aria-hidden="true"></span><span class="mt">'+esc(label)+'</span></button>';
+  }
+  function cap(t){ return t.charAt(0).toUpperCase()+t.slice(1); }
+  function updateMenuHighlight(){
+    [].slice.call(menuEl.querySelectorAll('.menu-item')).forEach(function(btn){
+      var bi = parseInt(btn.getAttribute('data-i'),10);
+      btn.classList.toggle('visited', !!visited[bi] && bi!==i);
+      btn.classList.toggle('current', bi===i);
+      if(bi===i) btn.setAttribute('aria-current','true'); else btn.removeAttribute('aria-current');
+    });
+  }
+  function jumpTo(idx){
+    if(idx<0 || idx>=screens.length) return;
+    i=idx; render();
+    if(window.innerWidth <= 760) setMenu(false); // close the overlay menu on mobile after jumping
+  }
+
+  // ---------- transcript ----------
+  var vttCache = {};
+  function parseVtt(text){
+    return text.replace(/^WEBVTT[^\n]*\n/, '')
+      .split(/\n\n+/)
+      .map(function(block){
+        return block.split('\n').filter(function(l){ return l.trim() && !/-->/.test(l) && !/^\d+$/.test(l.trim()); }).join(' ');
+      })
+      .filter(Boolean).join('\n');
+  }
+  function fillTranscript(){
+    var s = screens[i];
+    if(s.type==='video' && s.captions){
+      if(vttCache[s.captions]){ transcriptBody.textContent = vttCache[s.captions]; return; }
+      transcriptBody.innerHTML = '<span class="transcript-empty">Loading…</span>';
+      fetch(s.captions).then(function(r){return r.text();}).then(function(t){
+        var parsed = parseVtt(t); vttCache[s.captions]=parsed;
+        if(!transcriptPanel.hidden && screens[i]===s) transcriptBody.textContent = parsed;
+      }).catch(function(){ transcriptBody.innerHTML='<span class="transcript-empty">Transcript unavailable.</span>'; });
+    } else if(s.type==='reading' && s.html){
+      var tmp=document.createElement('div'); tmp.innerHTML=s.html;
+      transcriptBody.textContent = (tmp.textContent||'').trim();
+    } else {
+      transcriptBody.innerHTML = '<span class="transcript-empty">No transcript for this screen.</span>';
+    }
+  }
+  function toggleTranscript(show){
+    var open = show==null ? transcriptPanel.hidden : show;
+    transcriptPanel.hidden = !open;
+    transcriptToggle.setAttribute('aria-pressed', open?'true':'false');
+    if(open){ fillTranscript(); transcriptClose.focus(); }
+    else { transcriptToggle.focus(); }
   }
   function screenLabel(s){
     if(s.type==='question') return 'Question '+s.index+' of '+s.total;
@@ -221,11 +306,23 @@
   });
   // global keyboard: left/right arrows page between screens (when not inside a radiogroup)
   document.addEventListener('keydown', function(e){
-    if(e.target.closest && e.target.closest('.options')) return;
+    if(e.target.closest && (e.target.closest('.options') || e.target.closest('.sidebar') || e.target.closest('.transcript'))) return;
     if(e.key==='ArrowRight' && !nextBtn.disabled){ go(1); }
     else if(e.key==='ArrowLeft' && !backBtn.disabled){ go(-1); }
   });
 
+  // menu + transcript wiring
+  function setMenu(open){
+    document.body.classList.toggle('menu-collapsed', !open);
+    menuToggle.setAttribute('aria-expanded', open?'true':'false');
+  }
+  menuToggle.addEventListener('click', function(){ setMenu(document.body.classList.contains('menu-collapsed')); });
+  transcriptToggle.addEventListener('click', function(){ toggleTranscript(); });
+  transcriptClose.addEventListener('click', function(){ toggleTranscript(false); });
+  // start with the menu open on wide screens, collapsed on narrow ones
+  setMenu(window.innerWidth > 760);
+
+  buildMenu();
   if(window.SCORM){ SCORM.init(); restoreState(); }
   window.addEventListener('beforeunload', function(){ if(window.SCORM){ persist(); SCORM.finish(); } });
   render();

@@ -78,8 +78,11 @@ function indexHtml(title, courseJson) {
 <link rel="stylesheet" href="shell.css" />
 </head>
 <body>
-  <a href="#stage" class="skip-link">Skip to content</a>
+  <a href="#slide" class="skip-link">Skip to content</a>
   <header class="topbar">
+    <button class="icon-btn" id="menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="true" aria-controls="sidebar">
+      <span class="bars" aria-hidden="true"></span>
+    </button>
     <span class="brand-dot" aria-hidden="true"></span>
     <span class="course-title">${xmlEscape(title)}</span>
     <span class="spacer"></span>
@@ -88,11 +91,23 @@ function indexHtml(title, courseJson) {
   <div class="progress-rail" id="progress-rail" role="progressbar" aria-label="Course progress" aria-valuemin="1" aria-valuenow="1">
     <div class="progress-fill" id="progress-fill"></div>
   </div>
-  <main class="stage" id="stage" tabindex="-1"></main>
-  <nav class="navbar" aria-label="Course navigation">
+  <div class="app">
+    <nav class="sidebar" id="sidebar" aria-label="Course menu"><div class="menu" id="menu"></div></nav>
+    <main class="stage" id="stage" tabindex="-1">
+      <section class="slide" id="slide"></section>
+    </main>
+  </div>
+  <aside class="transcript" id="transcript" aria-label="Transcript" hidden>
+    <div class="transcript-head"><span>Transcript</span>
+      <button class="icon-btn" id="transcript-close" type="button" aria-label="Close transcript">×</button></div>
+    <div class="transcript-body" id="transcript-body"></div>
+  </aside>
+  <footer class="controlbar" aria-label="Course controls">
+    <button class="btn btn-soft" id="transcript-toggle" type="button" aria-pressed="false">Transcript</button>
+    <span class="spacer"></span>
     <button class="btn btn-ghost" id="back" type="button">Back</button>
     <button class="btn btn-primary" id="next" type="button">Next</button>
-  </nav>
+  </footer>
   <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <script src="scorm-api.js"></script>
   <script>window.COURSE = ${courseJson};</script>
