@@ -190,10 +190,12 @@
   }
   function renderVideo(s){
     var track = s.captions ? '<track kind="captions" src="'+esc(s.captions)+'" srclang="en" label="English" default>' : '';
-    return el('<section class="screen">'+
-      '<p class="eyebrow">'+esc(s.eyebrow||'Video')+'</p>'+
-      '<h2 class="title" data-focus>'+esc(s.title)+'</h2>'+
-      '<div class="accent-rule"></div>'+
+    return el('<section class="screen video-screen">'+
+      '<div class="v-head">'+
+        '<p class="eyebrow">'+esc(s.eyebrow||'Video')+'</p>'+
+        '<h2 class="title" data-focus>'+esc(s.title)+'</h2>'+
+        '<div class="accent-rule"></div>'+
+      '</div>'+
       '<div class="media"><video controls preload="metadata" src="'+esc(s.src)+'" aria-label="'+esc(s.title)+' video">'+track+'</video></div>'+
       (s.captions?'':'<p class="caption">Captions can be added by placing a matching .vtt file in a captions/ folder.</p>')+
       '</section>');

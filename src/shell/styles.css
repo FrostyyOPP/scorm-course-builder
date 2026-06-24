@@ -87,7 +87,18 @@ h2.title{font:800 32px var(--font);line-height:1.12;color:var(--navy);margin:0 0
 /* media */
 .media{border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);background:#000;}
 .media video{display:block;width:100%;height:auto;}
-.caption{font-size:13px;color:var(--slate-muted);margin-top:12px;}
+.caption{font-size:13px;color:var(--slate-muted);margin-top:10px;}
+
+/* video screen: video is the focus — fill the slide height, no scroll */
+.slide:has(.video-screen){padding:24px 30px;}
+.video-screen{display:flex;flex-direction:column;height:100%;}
+.video-screen .v-head{flex:0 0 auto;}
+.video-screen .v-head .eyebrow{margin-bottom:8px;}
+.video-screen .v-head .title{font-size:24px;margin:0 0 8px;}
+.video-screen .accent-rule{margin:0 0 14px;}
+.video-screen .media{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;}
+.video-screen .media video{width:100%;height:100%;max-height:100%;object-fit:contain;}
+.video-screen .caption{flex:0 0 auto;}
 .note-card{background:var(--card);border-radius:14px;box-shadow:var(--shadow-sm);border-left:5px solid var(--teal);padding:24px 26px;margin:22px 0;}
 
 /* quiz */
