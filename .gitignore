@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# build output / scratch
+output/
+tmp/
+input/
+*.zip
+
+# course content / media — never commit (may be proprietary, and large)
+*.mp4
+*.webm
+*.m4v
+*.mov
+*.docx
+*.pptx
+*.pdf
+*.vtt
+*.h5p
+
+# vendored third-party H5P libraries (fetched separately; large)
+libraries/
+samples/
+
+# editor / OS / local config
+.claude/
+.DS_Store
+.vscode/
+.idea/

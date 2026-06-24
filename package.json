@@ -1,0 +1,26 @@
+{
+  "name": "scorm-course-builder",
+  "version": "0.1.0",
+  "description": "Turn a folder of an outline, videos, Word readings, and a quiz into a branded, accessible SCORM 1.2 course — no manual authoring tool.",
+  "type": "commonjs",
+  "bin": {
+    "scorm-course-builder": "src/index.js"
+  },
+  "scripts": {
+    "build": "node src/index.js"
+  },
+  "keywords": ["scorm", "scorm-1.2", "elearning", "lms", "course", "docx", "wcag", "accessibility", "authoring"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FrostyyOPP/scorm-course-builder.git"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "archiver": "^7.0.1",
+    "commander": "^12.1.0",
+    "h5p-standalone": "^3.8.2",
+    "js-yaml": "^4.2.0",
+    "mammoth": "^1.8.0"
+  }
+}
