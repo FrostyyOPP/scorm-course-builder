@@ -116,23 +116,26 @@ function indexHtml(title, courseJson) {
 </html>`;
 }
 
-// Assemble a SCORM 1.2 package from already-prepared screens + assets.
+// Write the full runnable course (player + assets + index.html + manifest) into `build`.
 //   assets: [{ src: <absolute file>, dest: 'assets/<name>' }]
+function writeCourseDir(build, { title, screens, assets, passPercentage }) {
+  const courseData = { title, passPercentage: passPercentage || 50, screens };
+  fs.mkdirSync(path.join(build, 'assets'), { recursive: true });
+  for (const a of assets) fs.copyFileSync(a.src, path.join(build, a.dest));
+  fs.copyFileSync(path.join(SHELL, 'styles.css'), path.join(build, 'shell.css'));
+  fs.copyFileSync(path.join(SHELL, 'player.js'), path.join(build, 'player.js'));
+  fs.copyFileSync(path.join(SHELL, 'scorm-api.js'), path.join(build, 'scorm-api.js'));
+  fs.writeFileSync(path.join(build, 'index.html'), indexHtml(title, JSON.stringify(courseData)));
+  const allFiles = listFiles(build).filter((f) => f !== 'imsmanifest.xml');
+  fs.writeFileSync(path.join(build, 'imsmanifest.xml'), buildManifest(title, allFiles));
+}
+
+// Assemble a SCORM 1.2 .zip from already-prepared screens + assets.
 async function packageCourse({ title, screens, assets, outDir, passPercentage }) {
   fs.mkdirSync(outDir, { recursive: true });
-  const courseData = { title, passPercentage: passPercentage || 50, screens };
   const build = fs.mkdtempSync(path.join(os.tmpdir(), 'shell-'));
   try {
-    fs.mkdirSync(path.join(build, 'assets'), { recursive: true });
-    for (const a of assets) fs.copyFileSync(a.src, path.join(build, a.dest));
-    fs.copyFileSync(path.join(SHELL, 'styles.css'), path.join(build, 'shell.css'));
-    fs.copyFileSync(path.join(SHELL, 'player.js'), path.join(build, 'player.js'));
-    fs.copyFileSync(path.join(SHELL, 'scorm-api.js'), path.join(build, 'scorm-api.js'));
-    fs.writeFileSync(path.join(build, 'index.html'), indexHtml(title, JSON.stringify(courseData)));
-
-    const allFiles = listFiles(build).filter((f) => f !== 'imsmanifest.xml');
-    fs.writeFileSync(path.join(build, 'imsmanifest.xml'), buildManifest(title, allFiles));
-
+    writeCourseDir(build, { title, screens, assets, passPercentage });
     const outFile = path.join(outDir, slugify(title) + '-SCORM12.zip');
     await zipDir(build, outFile);
     return { outFile, screenCount: screens.length };
@@ -150,7 +153,7 @@ async function buildShell(projectDir, opts = {}) {
   return { ...res, warnings };
 }
 
-module.exports = { buildShell, packageCourse };
+module.exports = { buildShell, packageCourse, writeCourseDir, buildScreens };
 
 if (require.main === module) {
   const dir = path.resolve(process.argv[2] || '.');

@@ -7,7 +7,8 @@
     "scorm-course-builder": "src/index.js"
   },
   "scripts": {
-    "build": "node src/index.js"
+    "build": "node src/index.js",
+    "preview": "node src/preview.js"
   },
   "keywords": ["scorm", "scorm-1.2", "elearning", "lms", "course", "docx", "wcag", "accessibility", "authoring"],
   "license": "MIT",

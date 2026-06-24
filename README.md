@@ -99,6 +99,23 @@ Structure comes from the filename codes; titles come from the outline. Output:
 > Large courses make large zips (e.g. 20 videos ≈ 737 MB). If your LMS caps upload size,
 > compress the videos first or host them externally.
 
+## Preview before export
+
+Review the whole course in a browser before you export the SCORM — with a link you can
+open on any device or share for review:
+
+```bash
+node src/preview.js "/path/to/Your Course Folder"
+```
+
+It assembles the course, serves it, and prints a **public link** (and a localhost one).
+Click through every screen, video, the menu, transcript, and quiz exactly as the LMS will
+show it. Press **Ctrl+C** to stop — nothing is written to your folder. When it looks right,
+run the build to export.
+
+> The public link uses a free Cloudflare quick tunnel — `brew install cloudflared` once.
+> Without it, the local link still works on this machine.
+
 ## What you get
 
 A slide-by-slide course: **cover → module dividers → video → reading → quiz-start →

@@ -34,7 +34,7 @@ function findSubfolders(root) {
 }
 
 // ---- assemble ----------------------------------------------------------------
-async function buildFull(courseDir, opts = {}) {
+async function assembleFull(courseDir) {
   const outlineFile = listFilesIn(courseDir, /outline.*\.docx$/i)[0] || listFilesIn(courseDir, /\.docx$/i)[0];
   if (!outlineFile) throw new Error('No outline .docx found in the course folder.');
   const ol = await parseOutlineDocx(outlineFile);
@@ -130,12 +130,17 @@ async function buildFull(courseDir, opts = {}) {
 
   screens.push({ type: 'summary' });
 
-  const outDir = opts.out ? path.resolve(opts.out) : courseDir;
-  const res = await packageCourse({ title: ol.title, screens, assets, outDir, passPercentage: opts.passPercentage });
-  return { ...res, warnings, modules: modules.length, videos: videoFiles.length, readings: readingFiles.length };
+  return { title: ol.title, screens, assets, warnings, modules: modules.length, videos: videoFiles.length, readings: readingFiles.length };
 }
 
-module.exports = { buildFull };
+async function buildFull(courseDir, opts = {}) {
+  const a = await assembleFull(courseDir);
+  const outDir = opts.out ? path.resolve(opts.out) : courseDir;
+  const res = await packageCourse({ title: a.title, screens: a.screens, assets: a.assets, outDir, passPercentage: opts.passPercentage });
+  return { ...res, warnings: a.warnings, modules: a.modules, videos: a.videos, readings: a.readings };
+}
+
+module.exports = { buildFull, assembleFull };
 
 if (require.main === module) {
   const dir = path.resolve(process.argv[2] || '.');
