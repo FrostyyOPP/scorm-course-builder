@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# build output / scratch
+output/
+tmp/
+input/
+*.zip
+
+# course content / media — never commit (may be proprietary, and large)
+*.mp4
+*.webm
+*.m4v
+*.mov
+*.docx
+*.pptx
+*.pdf
+*.vtt
+*.h5p
+
+# editor / OS / local config
+.claude/
+.DS_Store
+.vscode/
+.idea/
+
+# whisper models (large; download separately)
+models/
+
+# Next.js build cache (review app)
+.next/
+
+# locally generated demo media (the real course images live in the course folder)
+src/shell-v2/assets/
+*.png

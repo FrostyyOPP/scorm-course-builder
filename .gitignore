@@ -1,0 +1,23 @@
+# Vendored runtime binaries — too large for GitHub (re-vendor per machine; see CLAUDE.md)
+runtime/
+
+# Node / Next.js
+**/node_modules/
+app/review-app/.next/
+app/review-app/out/
+npm-debug.log*
+
+# Generated / machine-specific
+tools.json
+.active-course
+logs/*.log
+logs/**/*.log
+
+# Review + build artifacts (generated per course, live in course folders)
+**/.review/
+**/*.zip
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.tmp

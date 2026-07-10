@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "scorm-review": {
+      "command": "node",
+      "args": ["./review-app/mcp/server.js"],
+      "env": { "COURSE_DIR": "D:\\Claude\\Ashish Mohan" }
+    }
+  }
+}

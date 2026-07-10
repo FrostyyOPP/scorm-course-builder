@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Course Engine v2 — demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="viewport">
+    <div id="stage">
+      <div id="topbar"><div class="bar" id="topbar-fill"></div></div>
+      <div id="slide-host"></div>
+      <button class="navbtn" id="nav-back" aria-label="Back"></button>
+      <button class="navbtn" id="nav-next" aria-label="Next"></button>
+      <div class="cc-overlay" id="cc-overlay"></div>
+      <div id="controlbar"></div>
+    </div>
+  </div>
+  <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/lottie.min.js"></script>
+  <script>
+  window.COURSE = {
+    title: "AI and Digital Transformation in Clinical Practice",
+    subtitle: "Practical AI tools, clinical workflow optimization, and responsible adoption.",
+    passPercentage: 70,
+    slides: [
+      { id:"home", type:"home", accent:"indigo",
+        title:"AI and Digital Transformation in Clinical Practice",
+        subtitle:"Practical AI tools, clinical workflow optimization, and responsible clinical adoption.",
+        image:"assets/home-bg.png", vo:"",
+        modules:[
+          {label:"Module 1", title:"Clinical Challenges and the Role of AI", target:"m1"},
+          {label:"Module 2", title:"Applying AI Across Diagnostics & Care", target:"m1"},
+          {label:"Module 3", title:"Managing Digital Transformation", target:"m1"},
+          {label:"Module 4", title:"Ethics, Regulation & Responsible AI", target:"m1"}
+        ]},
+      { id:"m1", type:"moduleIndex", accent:"indigo", kicker:"Module 1", image:"", vo:"",
+        title:"Clinical Challenges and the Role of AI in Healthcare",
+        lessons:[
+          {label:"Lesson 1", title:"Understanding Clinical Pain Points", target:"m1l1"},
+          {label:"Lesson 2", title:"Where AI Fits in Clinical Practice", target:"m1l1"},
+          {label:"Lesson 3", title:"Realistic Expectations from Clinical AI", target:"m1l1"}
+        ]},
+      { id:"m1l1", type:"lessonIndex", accent:"indigo", kicker:"Module 1 · Lesson 1", image:"", vo:"",
+        title:"Understanding Clinical Pain Points",
+        videos:[
+          {label:"Video 1", title:"Diagnostic Delays and Decision Fatigue", target:"m1l1v1"},
+          {label:"Video 2", title:"Administrative Overload in Healthcare", target:"m1l1v1"},
+          {label:"Video 3", title:"Care Coordination and Workflow Gaps", target:"m1l1v1"}
+        ]},
+      { id:"m1l1v1", type:"video", accent:"indigo",
+        course:"AI & Digital Transformation in Clinical Practice", module:"Module 1 · Lesson 1 · Video 1",
+        title:"Diagnostic Delays and Decision Fatigue", src:"assets/v1.mp4", captions:"" },
+      { id:"qi1", type:"quizIntro", accent:"teal", module:"Module 1", title:"Graded Quiz", count:10, image:"", vo:"" },
+      { id:"q1", type:"question", accent:"teal", module:"Module 1", moduleKey:"M1", index:1, total:10,
+        question:"A busy clinic sees subtle early symptoms diagnosed late, with clinician decision fatigue. How could AI best help?",
+        options:[
+          {text:"Replace clinicians and make final diagnostic decisions", correct:false, feedback:"Full replacement is unsafe and misaligned with the assistive role of AI."},
+          {text:"Automatically discharge low-risk patients without review", correct:false, feedback:"Discharging without review creates serious safety risks."},
+          {text:"Flag high-risk patterns and present prioritized alerts to clinicians", correct:true, feedback:"AI highlights high-risk cases so clinicians focus attention while keeping final authority."},
+          {text:"Remove decision-support tools to reduce distraction", correct:false, feedback:"Removing tools does not address overload or prioritization."}
+        ]},
+      { id:"q2", type:"question", accent:"teal", module:"Module 1", moduleKey:"M1", index:2, total:10,
+        question:"Which is the best example of AI reducing administrative burden in clinical practice?",
+        options:[
+          {text:"Generating synthetic patient records for teaching", correct:false, feedback:"Synthetic records do not reduce real-world admin workload."},
+          {text:"Drafting clinical notes from visit summaries for clinician review", correct:true, feedback:"AI pre-drafts documentation, reducing typing while the clinician verifies."},
+          {text:"Blocking all non-urgent patient messages", correct:false, feedback:"Blocking messages can harm access and communication."},
+          {text:"Replacing billing staff with a fully autonomous system", correct:false, feedback:"Autonomous billing without oversight introduces errors and compliance risk."}
+        ]},
+      { id:"r1", type:"result", accent:"teal", module:"Module 1", moduleKey:"M1" },
+      { id:"exit", type:"exit", accent:"indigo", title:"Course complete",
+        subtitle:"You've finished the Module 1 preview. In the full course this is where the learner exits back to the LMS." }
+    ]
+  };
+  </script>
+  <script src="player.js"></script>
+</body>
+</html>

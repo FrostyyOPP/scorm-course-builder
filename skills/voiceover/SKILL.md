@@ -1,0 +1,50 @@
+---
+name: voiceover
+description: Use to generate slide narration audio with ElevenLabs ONLY, saved per-slide so the engine can attach it as the slide vo and drive the Lottie replay control.
+---
+
+# Voiceover
+
+## Purpose
+Generate narration audio for slides that carry a `vo` field. The engine in
+`app/src/shell-v2/player.js` treats per-slide audio as the active media: it binds the
+control bar to the `<audio>` element, renders captions over the stage, and drives the
+Lottie "replay narration" button via `slidePlay()` / `audio()`.
+
+## Inputs
+- The voiceover line list from **outline** (slide id -> narration text).
+- Voice/tone decision from **research**.
+- Any pre-existing audio in `<COURSE_DIR>/Voiceovers/`.
+
+## Outputs
+- One audio file per narrated slide, referenced by the slide's `vo` field so
+  `audio(s)` emits `<audio preload="auto" src="...">` and `slidePlay(s)` mounts the Lottie.
+- A run-log entry mapping slide ids to audio files and the voice used.
+
+## Tools — HARD RULE
+- **Voiceover -> ElevenLabs ONLY.** Do not use any other TTS engine.
+- `Bash`/`PowerShell` to place audio files and wire `vo` paths.
+
+## Menu-slide narration — HARD RULE (home / moduleIndex / lessonIndex)
+Every course menu that lists items uses this exact shape:
+`"In this {course|module|lesson}, we will cover. First, <title>. Second, <title>. Third, <title>[. Fourth, <title>]. Click on each tab to know more about it."`
+- Ordinals + item title ONLY. Never "Module/Lesson/Video one", never a count ("three videos").
+- Always end with **"Click on each tab to know more about it."**
+- Card-reveal `cues[]` = the spoken onset of each ordinal. Generate ONE full TTS per menu slide, then
+  run Whisper `-ml 1 -oj` (word timestamps) and take the `offsets.from` of each First/Second/Third/Fourth.
+  No per-item stitching required.
+- Index card titles render in **Title Case** (preserve acronyms/brands: GenAI, SQL, ChatGPT, LLM, EDA, CRISP-DM).
+
+## Steps
+1. For each narrated slide, synthesize the line with ElevenLabs using one consistent voice
+   across the course.
+2. Save the audio and set the slide's `vo` to its asset path so the assembler ships it and
+   the player binds it. Note: the current `build-v2.js` skips VO by default — add `vo` fields
+   to the slide objects (or extend `assemble()`) when narration is in scope.
+3. Keep each line's audio aligned to its on-screen content so **captions** can transcribe it
+   cleanly with Whisper.
+
+## Handoff
+- Narration audio -> **captions** (Whisper transcribes it to `.vtt`).
+- `vo`-wired slides -> **assemble-build** for the rebuild.
+This stage runs **in parallel** with **image-generation**; captions follow once audio exists.
