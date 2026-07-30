@@ -150,6 +150,10 @@ h2.title{font-size:var(--fs-h2);font-weight:700;line-height:1.25;color:var(--ink
 .start-btn.ghost:hover{background:var(--c-indigo-2);}
 .start-btn .bchev{display:inline-flex;width:26px;height:26px;}
 .start-btn .bchev svg{width:26px;height:26px;}
+/* icons dropped straight into a button (e.g. IC.replay in the quiz-review button) have no
+   wrapper span to size them - an unsized inline <svg> falls back to a ~300x150 default box and
+   balloons the whole pill. Constrain any bare direct-child icon the same as .bchev's. */
+.start-btn>svg{width:26px;height:26px;flex:0 0 auto;}
 /* reading-material link, visited state (after the learner opens it) */
 .start-btn.read-btn.visited{background:var(--c-teal,#14B8A6);box-shadow:0 12px 30px rgba(20,184,166,.30);}
 .start-btn.read-btn.visited:hover{background:var(--c-teal-deep,#0f9488);}
@@ -341,6 +345,7 @@ h2.title{font-size:var(--fs-h2);font-weight:700;line-height:1.25;color:var(--ink
 .exit-btn{display:inline-flex;align-items:center;gap:var(--sp-3);background:var(--c-coral);color:#fff;border:none;
   border-radius:var(--r-pill);padding:18px 44px;font-size:30px;font-weight:700;cursor:pointer;box-shadow:var(--sh-md);
   transition:transform var(--dur-fast) var(--ease-spring),background var(--dur-fast);}
+.exit-btn>svg{width:26px;height:26px;flex:0 0 auto;}
 .exit-btn:hover{transform:translateY(-3px) scale(1.03);background:var(--c-coral-deep);}
 
 /* big centred slide play (Lottie) for slides with voiceover */
