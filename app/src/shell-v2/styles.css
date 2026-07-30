@@ -220,7 +220,11 @@ h2.title{font-size:var(--fs-h2);font-weight:700;line-height:1.25;color:var(--ink
   background:conic-gradient(var(--accent) calc(var(--pct,0)*1%),var(--bg-soft) 0);position:relative;}
 .score-ring::before{content:"";position:absolute;inset:26px;border-radius:50%;background:var(--bg-slide);}
 .score-ring .pct{position:relative;font-size:130px;font-weight:800;color:var(--ink-1);line-height:1;}
-.score-ring .lbl{position:relative;font-size:28px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);}
+/* fixed English labels like "Your Score" fit easily; the bilingual convention roughly doubles
+   the string ("Votre score (Your Score)") and the unconstrained label pushed past the ring's
+   inscribed white circle into the colored band. 300px is a safe chord width even at the label's
+   vertical offset from ring-center, so long labels wrap to two centered lines instead. */
+.score-ring .lbl{position:relative;font-size:28px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);max-width:300px;text-align:center;}
 
 /* ===========================  CONTROL BAR  =========================== */
 #controlbar{position:absolute;left:0;right:0;bottom:0;height:72px;z-index:40;
