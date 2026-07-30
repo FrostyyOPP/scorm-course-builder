@@ -291,6 +291,7 @@ async function stageDub() {
 
 async function stageCaption() {
   fs.mkdirSync(DIR.wavTl, { recursive: true });
+  fs.mkdirSync(DIR.cap, { recursive: true });
   // 1. authored VO clips get deterministic captions (HARD RULE L6)
   const scriptPath = path.join(DIR.src_, `menu-vo-${LANG}.json`);
   if (fs.existsSync(scriptPath)) {
