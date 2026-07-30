@@ -5,6 +5,25 @@ description: Use to build a localized (e.g. French) course from an English sourc
 
 # Localize a course into another language
 
+## Setup on a new machine (once per machine, not per course)
+
+Cloning `scorm-course-builder` from GitHub gets the code only. Two things are gitignored (too
+large / machine-specific) and must be added once per machine before the pipeline runs:
+
+1. **`runtime/`** — vendored `node`, `ffmpeg`, `whisper` (+ the `ggml-small.bin` multilingual and
+   `ggml-silero-v5.1.2.bin` VAD models). Copy this folder in from another machine that has it (it's
+   ~925MB, over GitHub's 100MB file limit, hence gitignored). Without it `localize.js` falls back to
+   whatever `node`/`ffmpeg` are on PATH, if any.
+2. **`app/node_modules`** — run `app/runtime/node/node.exe` … actually: from the repo root,
+   `runtime/node/npm.cmd --prefix app install` (or `cd app && ../runtime/node/npm.cmd install`).
+   `app/package.json` declares `archiver`, `js-yaml`, `mammoth`; without them `build-v2.js` fails at
+   the package stage with `Cannot find module 'archiver'`. The review app has its own dependencies
+   under `app/review-app/` — only needed if you're running the visual reviewer, not for the CLI
+   pipeline — install the same way if you use it.
+
+Verified 2026-07-30: a fresh `git clone` + these two steps ran a synthetic course through every
+stage (`tts → menuvo → dub → caption → compress → package`) to a valid, French-verified SCORM zip.
+
 ## Input contract — HARD RULE L0
 
 The client supplies exactly three things. Do not ask for more, and do not assume more exists.
