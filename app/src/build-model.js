@@ -59,7 +59,9 @@ async function buildModel(courseDir) {
   // outline titles (best-effort)
   let ol = { title: path.basename(courseDir), subtitle: '', moduleTitles: {}, lessonTitles: {}, videoTitles: {} };
   const odoc = findOutlineDocx(courseDir);
-  if (odoc) { try { ol = await parseOutlineDocx(odoc); } catch (e) { warnings.push('Outline parse failed: ' + e.message); } }
+  const courseNumMatch = /Course\s*(\d+)/i.exec(path.basename(courseDir));
+  const courseNumber = courseNumMatch ? +courseNumMatch[1] : undefined;
+  if (odoc) { try { ol = await parseOutlineDocx(odoc, { courseNumber }); } catch (e) { warnings.push('Outline parse failed: ' + e.message); } }
   else warnings.push('No outline .docx found (titles will come from filenames).');
   if (!ol.title || ol.title === 'Course') {
     ol.title = odoc ? path.basename(odoc).replace(/\.docx$/i, '').replace(/\s*outline\s*$/i, '').trim() : path.basename(courseDir);

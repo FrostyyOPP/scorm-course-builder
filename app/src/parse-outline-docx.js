@@ -7,12 +7,31 @@
  * Tolerant to both authored layouts:
  *   - inline:   "Module 1: Foundations..."  /  "Module 1 - Foundations..."  /  "Lesson 1: ..."
  *   - labelled: "Module 1" + "Title of the Module: ..."  /  "Lesson 1" + "Title of the Lesson: ..."
+ *
+ * Multi-course program outlines (one .docx covering "Course 1", "Course 2", ... under a bare
+ * "Course N" heading in PART 2 - OUTLINE: PROGRAM STRUCTURE) repeat Module 1/Lesson 1/Video 1
+ * per course. Pass opts.courseNumber to scope parsing to just that course's section — otherwise
+ * every course's Module/Lesson/Video titles collide on the same M1L1V1-style keys.
  */
 const mammoth = require('mammoth');
 
-async function parseOutlineDocx(filePath) {
+async function parseOutlineDocx(filePath, opts) {
+  opts = opts || {};
   const { value } = await mammoth.extractRawText({ path: filePath });
-  const lines = value.split('\n').map((l) => l.trim());
+  const allLines = value.split('\n').map((l) => l.trim());
+
+  const sectionMarker = /^Course\s+(\d+)\s*$/i;
+  const sections = [];
+  allLines.forEach((line, i) => { const mt = sectionMarker.exec(line); if (mt) sections.push({ n: +mt[1], start: i }); });
+  let lines = allLines;
+  if (opts.courseNumber && sections.length) {
+    const idx = sections.findIndex((s) => s.n === opts.courseNumber);
+    if (idx >= 0) {
+      const start = sections[idx].start;
+      const end = idx + 1 < sections.length ? sections[idx + 1].start : allLines.length;
+      lines = allLines.slice(start, end);
+    }
+  }
 
   const out = { title: 'Course', subtitle: '', moduleTitles: {}, lessonTitles: {}, videoTitles: {} };
   let m = 0, l = 0;
@@ -23,7 +42,8 @@ async function parseOutlineDocx(filePath) {
     let mt;
 
     if ((mt = /^Course Title:\s*(.+)$/i.exec(line))) { out.title = mt[1].trim(); continue; }
-    if ((mt = /^(?:Course )?Subtitle:\s*(.+)$/i.exec(line))) { if (!out.subtitle) out.subtitle = mt[1].trim(); continue; }
+    if ((mt = /^Title of the Course:\s*(.+)$/i.exec(line))) { if (!out.title || out.title === 'Course') out.title = mt[1].trim(); continue; }
+    if ((mt = /^(?:Course )?Subtitle\s*[-–:]\s*(.+)$/i.exec(line))) { if (!out.subtitle) out.subtitle = mt[1].trim(); continue; }
 
     // "Module N: Title" / "Module N - Title" / "Module N – Title"  (inline title)
     if ((mt = /^Module\s+(\d+)\s*[-–:]\s*(.+)$/i.exec(line))) { const n = +mt[1]; m = n; l = 0; if (!out.moduleTitles[n]) out.moduleTitles[n] = mt[2].trim(); continue; }
@@ -41,7 +61,8 @@ async function parseOutlineDocx(filePath) {
     if ((mt = /^Video\s+(\d+)\s*$/i.exec(line)) && m && l) {
       const v = +mt[1];
       const t = (lines.slice(i + 1).find((x) => x.length > 0) || '').trim();
-      if (t && !/^Video\s+\d+/i.test(t) && !/^Lesson\s+\d+/i.test(t) && !/^Module\s+\d+/i.test(t)) out.videoTitles['M' + m + 'L' + l + 'V' + v] = t;
+      const key = 'M' + m + 'L' + l + 'V' + v;
+      if (t && !out.videoTitles[key] && !/^Video\s+\d+/i.test(t) && !/^Lesson\s+\d+/i.test(t) && !/^Module\s+\d+/i.test(t)) out.videoTitles[key] = t;
       continue;
     }
   }

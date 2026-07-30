@@ -40,7 +40,12 @@ the octagon hero blocks on module, lesson, reading, and quiz-intro slides.
    DISTINCT image (unique-image rule); the build warns on duplicates. The assembler's `image(key)`
    only includes a file that exists at that exact path; a missing key renders an empty hero
    block (the engine's `imgBlock` handles an empty src gracefully).
-4. Promote any reusable, brand-defining stills into `assets/hero-photos/`.
+4. **Visually verify every image before finalizing — HARD RULE.** `aiGenerated:false` in Magnific's
+   metadata does NOT guarantee a genuine photo — confirmed misses: a clip-art render tagged
+   `aiGenerated:false`, and a toy-prop flat-lay passed off as a professional photo. After crop/grade,
+   `Read` the actual output PNG and look at it before wiring it into the model. Do this for every
+   image, not a spot-check — reviewers catch what spot-checks miss.
+5. Promote any reusable, brand-defining stills into `assets/hero-photos/`.
 
 ## Handoff
 PNGs land where **assemble-build** expects them. This stage runs **in parallel** with

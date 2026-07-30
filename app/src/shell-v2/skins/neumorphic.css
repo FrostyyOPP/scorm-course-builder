@@ -1,0 +1,176 @@
+/* =====================================================================
+   SKIN: neumorphic (accessible)
+   Loaded after styles.css, before the per-course theme <style>.
+
+   Neumorphism in its pure form is an accessibility failure: controls are
+   defined only by soft shadow, so they carry almost no contrast and stop
+   reading as interactive. This skin keeps the neumorphic FORM — one tinted
+   surface, dual-light extrusion, pillowy radii, press-in states — while
+   holding the line on WCAG 2.2:
+     - body copy and labels resolve to ink on a light surface (>= 4.5:1)
+     - every interactive control carries a real 2px edge, not just a shadow
+     - filled buttons keep white-on-accent contrast (>= 4.5:1)
+     - :focus-visible is a 3px accent ring at 3px offset, never shadow-only
+     - selected / correct / wrong states carry an icon-free colour AND a
+       border weight change, so state never depends on hue alone (1.4.1)
+   ===================================================================== */
+
+:root{
+  --nu-bg:#E7ECF3;
+  --nu-bg-2:#DFE6EF;
+  --nu-light:rgba(255,255,255,.95);
+  --nu-dark:rgba(148,163,187,.55);
+  --nu-dark-soft:rgba(148,163,187,.38);
+  --nu-edge:rgba(103,124,153,.34);      /* the visible affordance edge */
+  --nu-edge-soft:rgba(103,124,153,.20);
+
+  --nu-raise:-7px -7px 15px var(--nu-light), 7px 7px 18px var(--nu-dark);
+  --nu-raise-sm:-4px -4px 9px var(--nu-light), 4px 4px 11px var(--nu-dark-soft);
+  --nu-raise-lg:-11px -11px 24px var(--nu-light), 11px 11px 28px var(--nu-dark);
+  --nu-press:inset -4px -4px 9px var(--nu-light), inset 5px 5px 12px var(--nu-dark);
+  --nu-inset:inset -5px -5px 11px var(--nu-light), inset 6px 6px 14px var(--nu-dark-soft);
+
+  /* text-safe accent variants (the vivid ones stay for fills) */
+  --nu-ink:#16202E;
+  --nu-ink-2:#2B3949;
+  --nu-ink-3:#4A5A6E;
+}
+
+/* ---- surface: one flat tinted ground, no gradients, no glass ---- */
+.slide{background:var(--nu-bg);}
+.slide .bg{display:none;}                    /* the gradient-mesh blobs fight the flat ground */
+html,body{background:var(--nu-bg-2);}
+#viewport{background:radial-gradient(circle at 50% 40%,#D9E1EC 0%,#C7D2E0 100%);}
+
+/* ---- ink: darker than the base engine so 4.5:1 holds on the tinted ground ----
+   The base tokens are tuned for a white slide; on the #E7ECF3 neumorphic ground the
+   lightest of them (--ink-3, #64748B) lands at 3.9:1. Re-point the TOKENS rather than
+   patching selectors, so every base component inherits accessible ink. */
+:root{
+  --ink-3:#4A5A6E;      /* 5.9:1 on --nu-bg */
+  --ink-4:#5C6B80;      /* marks + grips, not body copy */
+}
+.lead{color:var(--nu-ink-2);}
+.small{color:var(--nu-ink-3);}
+.ct-points li{color:var(--nu-ink-2);}
+.option .opt-text,.dd-item{color:var(--nu-ink);}
+.feedback .fb-body{color:var(--nu-ink-2);}
+.eyebrow{color:var(--nu-ink-3);}
+
+/* ---- photos: extruded rather than dropped ---- */
+.hero-img{border-radius:34px;box-shadow:var(--nu-raise-lg);background:var(--nu-bg);}
+.hero-img .ring{box-shadow:inset 0 0 0 2px rgba(255,255,255,.6),inset 0 0 0 3.5px var(--nu-edge-soft);}
+
+/* =====================  RAISED / INSET PRIMITIVES  ==================== */
+.nu-raised{background:var(--nu-bg);box-shadow:var(--nu-raise);border:2px solid var(--nu-edge-soft);}
+.nu-inset{background:var(--nu-bg);box-shadow:var(--nu-inset);border:2px solid var(--nu-edge-soft);}
+.nu-card{background:var(--nu-bg);box-shadow:var(--nu-raise);border:2px solid var(--nu-edge-soft);}
+
+/* =========================  CONTENT SLIDES  ========================== */
+.ct-card{transition:transform var(--dur-base) var(--ease-out),box-shadow var(--dur-base);}
+.ct-card .ct-ic{background:var(--nu-bg);box-shadow:var(--nu-press);border:1.5px solid var(--nu-edge-soft);}
+.ct-callout{background:var(--nu-bg);box-shadow:var(--nu-inset);border:2px solid var(--nu-edge-soft);
+  border-left:8px solid var(--accent);}
+.ct-tick{box-shadow:var(--nu-raise-sm),0 0 0 5px color-mix(in srgb,var(--accent) 16%,transparent);}
+
+/* =========================  INDEX / MENU CARDS  ====================== */
+.index-item{background:var(--nu-bg);box-shadow:var(--nu-raise);border:2px solid var(--nu-edge-soft);
+  border-left:8px solid var(--accent);border-radius:var(--r-xl);
+  -webkit-backdrop-filter:none;backdrop-filter:none;}
+.index-item:hover,.index-item:focus-visible{transform:translateX(10px);box-shadow:var(--nu-raise-lg);
+  background:var(--nu-bg);border-left-width:12px;}
+.index-item:active{box-shadow:var(--nu-press);transform:translateX(10px) scale(.995);}
+.index-item .ix{background:var(--nu-bg);color:var(--c-indigo);box-shadow:var(--nu-press);
+  border:1.5px solid var(--nu-edge-soft);font-weight:800;}
+.index-item .it-kicker{color:var(--nu-ink-3);}
+.index-item .it-title{color:var(--nu-ink);}
+.index-item.done{opacity:1;background:var(--nu-bg);border-left-color:var(--c-teal);box-shadow:var(--nu-press);}
+.index-item.done .ix{background:var(--c-teal);color:#fff;box-shadow:none;border-color:transparent;}
+.index-item.done .it-title{color:var(--nu-ink-2);}
+/* home sits on a photographic ground, so its cards keep a legible scrim rather than the flat surface */
+.index-item.glass{background:rgba(231,236,243,.90);border:2px solid rgba(255,255,255,.55);
+  border-left:8px solid var(--accent);box-shadow:0 14px 34px rgba(12,20,33,.34);}
+.index-item.glass .it-kicker{color:var(--nu-ink-3);}
+.index-item.glass .it-title{color:var(--nu-ink);}
+.index-item.glass .ix{background:var(--nu-bg);color:var(--c-indigo);box-shadow:var(--nu-press);}
+.index-item.glass .chev{color:var(--c-indigo);}
+.index-item.glass:hover{background:rgba(231,236,243,.97);}
+/* The base engine fades a completed glass card to 6% white at 50% opacity — that works against its
+   own light ink, but on this skin's dark ink it collapses to ~1.2:1. Keep the scrim, mark completion
+   with the teal rail + tick instead of by fading the card out. */
+.index-item.glass.done{background:rgba(231,236,243,.90);opacity:1;border-left-color:var(--c-teal);
+  box-shadow:inset 3px 3px 9px rgba(90,110,140,.30),0 8px 22px rgba(12,20,33,.28);}
+.index-item.glass.done .it-title{color:var(--nu-ink-2);}
+.index-item.glass.done .it-kicker{color:var(--nu-ink-3);}
+.index-item.glass.done .ix{background:var(--c-teal);color:#fff;box-shadow:none;border-color:transparent;}
+
+/* ============================  BUTTONS  ============================== */
+/* Filled with the accent (white text keeps >= 4.5:1) but extruded, and they press IN on :active. */
+.start-btn{box-shadow:var(--nu-raise),0 10px 24px color-mix(in srgb,var(--c-coral) 30%,transparent);
+  border:2px solid rgba(255,255,255,.28);}
+.start-btn:hover{transform:translateY(-3px);
+  box-shadow:var(--nu-raise-lg),0 16px 34px color-mix(in srgb,var(--c-coral) 36%,transparent);}
+.start-btn:active{transform:translateY(0);box-shadow:var(--nu-press);}
+.start-btn.ghost{box-shadow:var(--nu-raise),0 10px 24px color-mix(in srgb,var(--c-indigo) 30%,transparent);}
+.start-btn.ghost:hover{box-shadow:var(--nu-raise-lg),0 16px 34px color-mix(in srgb,var(--c-indigo) 36%,transparent);}
+.start-btn:disabled{background:var(--nu-bg);color:var(--nu-ink-3);box-shadow:var(--nu-press);
+  border-color:var(--nu-edge-soft);opacity:1;}   /* readable when disabled, not a ghost */
+.slide-play{background:var(--c-indigo);border:2px solid rgba(255,255,255,.4);
+  box-shadow:var(--nu-raise),0 10px 26px rgba(15,23,42,.3);}
+.slide-play:active{box-shadow:var(--nu-press);}
+.pill{box-shadow:var(--nu-raise-sm);border:2px solid rgba(255,255,255,.28);}
+
+/* ======================  QUESTIONS / OPTIONS  ======================== */
+.option{background:var(--nu-bg);box-shadow:var(--nu-raise);border:2px solid var(--nu-edge);
+  -webkit-backdrop-filter:none;backdrop-filter:none;border-radius:var(--r-lg);}
+.option:hover{transform:translateY(-3px);box-shadow:var(--nu-raise-lg);border-color:var(--accent);}
+.option .mark{background:var(--nu-bg);box-shadow:var(--nu-press);border:2px solid var(--nu-edge);color:var(--nu-ink-2);}
+/* state = colour + a heavier border, so it never rests on hue alone (WCAG 1.4.1) */
+.option.selected{border-color:var(--accent);border-width:3px;box-shadow:var(--nu-press);}
+.option.selected .mark{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:none;}
+.option.correct{border-color:var(--c-teal);border-width:3px;box-shadow:var(--nu-press);}
+.option.correct .mark{background:var(--c-teal);border-color:var(--c-teal);color:#fff;box-shadow:none;}
+.option.wrong{border-color:var(--c-coral);border-width:3px;box-shadow:var(--nu-press);}
+.option.wrong .mark{background:var(--c-coral);border-color:var(--c-coral);color:#fff;box-shadow:none;}
+.feedback{background:var(--nu-bg);box-shadow:var(--nu-inset);border:2px solid var(--nu-edge-soft);
+  border-left:8px solid var(--accent);border-radius:var(--r-lg);}
+
+/* =======================  DRAG AND DROP  ============================= */
+.dd-slot{transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast),border-color var(--dur-fast);}
+.dd-slot.over{border-color:var(--accent);border-width:3px;box-shadow:var(--nu-press),0 0 0 5px color-mix(in srgb,var(--accent) 22%,transparent);}
+.dd-sort .dd-tray{background:var(--nu-bg);box-shadow:var(--nu-inset);border:2px dashed var(--nu-edge);}
+.dd-item{background:var(--nu-bg);box-shadow:var(--nu-raise-sm);border:2px solid var(--nu-edge);}
+.dd-item:hover{transform:translateY(-2px);box-shadow:var(--nu-raise);border-color:var(--accent);}
+.dd-item.placed{box-shadow:var(--nu-raise-sm);border-color:var(--nu-edge);}
+/* picked up via keyboard — must be unmistakable without a pointer */
+.dd-item.picked{border-color:var(--accent);border-width:3px;
+  box-shadow:var(--nu-raise-lg),0 0 0 5px color-mix(in srgb,var(--accent) 26%,transparent);}
+.dd-item.dd-ok{border-color:var(--c-teal);border-width:3px;box-shadow:var(--nu-press);}
+.dd-item.dd-no{border-color:var(--c-coral);border-width:3px;box-shadow:var(--nu-press);}
+/* revealed answers read as "shown to you", not "you got it right" */
+.dd-item.revealed{border-style:dashed;}
+.dd-item.dd-ok .dd-text::after{content:" \2713";font-weight:800;color:var(--c-teal);}
+.dd-item.dd-no .dd-text::after{content:" \2715";font-weight:800;color:var(--c-coral);}
+
+/* ==========================  RESULT RING  ============================ */
+.score-ring{box-shadow:var(--nu-raise-lg);}
+.score-ring::before{background:var(--nu-bg);box-shadow:var(--nu-press);}
+.score-ring .pct{color:var(--nu-ink);}
+.score-ring .lbl{color:var(--nu-ink-3);}
+
+/* ==========================  NAV / CHROME  =========================== */
+.navbtn{background:var(--nu-bg);color:var(--c-indigo);box-shadow:var(--nu-raise);border:2px solid var(--nu-edge-soft);}
+.navbtn:hover{box-shadow:var(--nu-raise-lg);}
+.navbtn:active{box-shadow:var(--nu-press);}
+.navbtn:disabled{color:var(--nu-ink-3);box-shadow:var(--nu-press);opacity:1;}
+
+/* ============================  FOCUS  ================================ */
+/* A ring, never shadow-only — neumorphic shadows are far too subtle to serve as a focus indicator. */
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
+.dd-slot:focus-visible,.dd-item:focus-visible,.option:focus-visible,.index-item:focus-visible{
+  outline:3px solid var(--accent);outline-offset:3px;}
+
+@media (prefers-contrast:more){
+  :root{--nu-edge:rgba(40,58,84,.75);--nu-edge-soft:rgba(40,58,84,.55);}
+  .option,.dd-item,.dd-slot,.index-item{border-width:3px;}
+}

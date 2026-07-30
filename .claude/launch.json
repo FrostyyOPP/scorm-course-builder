@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "review",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "app/review-app", "run", "dev"],
+      "port": 3100
+    }
+  ]
+}

@@ -41,6 +41,8 @@ export async function GET(req, { params }) {
     const src = map[rel];
     return src ? serve(src, req) : new Response('Not found', { status: 404 });
   }
+  const skinMatch = /^skin-([\w-]+)\.css$/.exec(rel);
+  if (skinMatch) return serve(path.join(SHELL, 'skins', skinMatch[1] + '.css'), req);
   const f = path.join(SHELL, path.normalize(rel).replace(/^(\.\.[/\\])+/, ''));
   if (!f.startsWith(SHELL)) return new Response('Forbidden', { status: 403 });
   return serve(f, req);

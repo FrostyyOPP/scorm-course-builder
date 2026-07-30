@@ -13,9 +13,12 @@ whole `SCORM Studio/` folder. Read this file at the start of every session.
    (`<course>/.pipeline/course.model.json`). The engine (`app/build-v2.js`) is 100% generic.
 2. **Always call Node via the vendored runtime:** `runtime/node/node.exe`. Same for ffmpeg/whisper
    (`runtime/ffmpeg/ffmpeg.exe`, `runtime/ffmpeg/ffprobe.exe`, `runtime/whisper/Release/whisper-cli.exe`
-   with model `runtime/whisper/ggml-base.en.bin`). `tools.json` (regenerate with
+   with model `runtime/whisper/ggml-base.en.bin`). **Always caption with VAD enabled**
+   (`--vad --vad-model runtime/whisper/ggml-silero-v5.1.2.bin`) — see `skills/captions/SKILL.md` for
+   why this is mandatory, not optional. `tools.json` (regenerate with
    `runtime/node/node.exe app/src/tools.js --emit`) records the resolved paths; `SCORM_NODE` /
-   `SCORM_FFMPEG` / `SCORM_FFPROBE` / `SCORM_WHISPER` / `SCORM_WHISPER_MODEL` env vars override.
+   `SCORM_FFMPEG` / `SCORM_FFPROBE` / `SCORM_WHISPER` / `SCORM_WHISPER_MODEL` /
+   `SCORM_WHISPER_VAD_MODEL` env vars override.
 3. **Run the pipeline through the gates below.** Pause for the reviewer at each gate; do not skip ahead.
 4. **Honor the Hard Rules.** They are enforced/warned by the build and matter for compliance and taste.
 
@@ -40,8 +43,25 @@ SCORM Studio/
       parse-quiz.js      ← parses the graded-quiz .docx (Qn / A–D / Correct Answer / Explanation)
       scorm.js           ← SCORM 1.2 manifest + zip helpers
       shell-v2/          ← the animated 16:9 player engine: player.js, styles.css, vendor/(GSAP,Lottie)
+        skins/           ← optional re-skins layered over styles.css (model.skin, e.g. "neumorphic")
     review-app/          ← Next.js + MUI reviewer + mcp/ (scorm-review MCP; reads COURSE_DIR)
 ```
+
+## Slide-based courses (no video tree)
+Not every course is a set of videos. A module may instead declare `screens[]` in `course.model.json`
+(see `src/course-model.js` for the schema) and the engine renders them directly:
+- **`content`** — on-screen text + optional supporting photo. `layout:"split"` (image left/right, and
+  the copy goes full-width automatically when the screen has no `image`) or `layout:"cards"` (icon cards).
+- **`knowledgeCheck`** — formative, ungraded, unlimited attempts, instant feedback, not in the LMS score.
+- **`dragdrop`** — graded activity in three modes: `match` (one item per labelled target), `sequence`
+  (one item per ordered slot) and `sort` (many items into bins). `attempts:N` then reveals the answers
+  (`attempts:0` = retry until correct). Every activity ships a keyboard path (Enter picks an item up,
+  Enter on a zone places it) and live `aria-label`s on the drop zones.
+Quiz questions may be authored inline as `module.questions[]` instead of a quiz `.docx` (set
+`assessment:true` for the final-assessment module). `model.scoring.includeActivities` adds graded
+drag-and-drop points to the reported LMS score, and the final result slide then shows both parts.
+`model.flow:"linear"` walks the deck in authored order (index slides stay clickable shortcuts)
+instead of the default hub-and-spoke navigation. `model.skin` loads `shell-v2/skins/<name>.css`.
 
 ## The course folder (input contract)
 A course is a folder OUTSIDE this app (e.g. `D:\Claude\<Course Name>\`). Attach one per session by
@@ -107,6 +127,14 @@ tree for a smaller zip). Validate the manifest + run‑time wiring. (skill: `pac
 
 > **GATE 5 — Final approval.** Only produce the final zip after explicit approval. Log it under `logs/`.
 
+## Localizing an existing course into another language
+If the job is "here are the English videos, the outline and the quiz — build me the French version",
+**read `skills/localize/SKILL.md` first and follow it.** It is the operational contract for that
+job: the three-file input contract, the 13 hard rules that prevent the specific failures seen on
+real deliveries (silently truncated narration, English videos shipped inside a "French" zip,
+ASR-corrupted captions on authored voiceover, restyled sibling courses), the one-command pipeline
+`app/localize.js`, and honest timing expectations. `PLAYBOOK.md` §7 is the background reading.
+
 ## Hard rules (do not deviate)
 - **Voiceover → ElevenLabs only. Images → Magnific only** (real stock photos via `stock_*`, or
   generated composites via `images_generate`). **Captions → Whisper only. Animation → GSAP + Lottie.**
@@ -122,7 +150,11 @@ tree for a smaller zip). Validate the manifest + run‑time wiring. (skill: `pac
   Do **not** prefix items with the word "Module/Lesson/Video N" and do **not** announce a count
   ("three videos"). Use ordinals (First, Second, Third, Fourth) followed by the item title only, and
   always end with **"Click on each tab to know more about it."** — never "Select a … to begin / use next…".
-  Card‑reveal `cues[]` = the spoken onset of each ordinal (derive via Whisper `-ml 1` word timestamps).
+  **Card‑reveal `cues[]` must be exact, not estimated.** Whisper word‑timestamps are unreliable on
+  longer clips (see `skills/voiceover/SKILL.md`) — synthesize intro/item/outro as separate clips, concat
+  with ffmpeg, and derive cues from real `ffprobe` durations at each boundary.
+- **Title‑slide voiceover template — HARD RULE.**
+  `"Welcome to the e-learning course of <Course Title>. Click Start to begin the course."`
 - **Index card titles are Title Case** on moduleIndex/lessonIndex lists (acronyms/brands like GenAI, SQL,
   ChatGPT, LLM, EDA, CRISP‑DM preserved as‑is).
 - **WCAG 1.2.2 (captions):** every narrated slide (home/moduleIndex/lessonIndex/quizIntro/reading/title/exit)
@@ -140,6 +172,10 @@ Tools: `scorm_review_status`, `scorm_review_feedback`, `scorm_slide_get`, `scorm
 `scorm_gate_decision`, `scorm_chat_inbox`, `scorm_chat_reply`. Shared state: `mcp/lib/review-state.js`.
 
 ## Pointers
+- **`PLAYBOOK.md`** — the narrative companion to this file: why each hard rule exists, the full
+  caption/VAD story, multi-course batch and multi-language dubbing workflows, and common
+  gotchas with fixes. Read it once per new machine/session; it's what lets you build a course to
+  the same bar without the user re-explaining everything from scratch.
 - Orchestration: `skills/run-pipeline/SKILL.md` (the gated checklist). Stage skills: `skills/<stage>/SKILL.md`.
 - Engine + slide types: `app/src/shell-v2/player.js`. Assembler: `app/build-v2.js`. Model + parser: `app/src/course-model.js`, `app/src/build-model.js`.
 - Media tools are **MCP connectors** (ElevenLabs, Magnific, Whisper, Preview) — they must be connected in the session; they are not bundled in the folder.

@@ -25,8 +25,11 @@ function xmlEscape(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function buildManifest(title, files) {
+// masteryScore MUST match the course's own pass mark — an LMS that reads it will otherwise
+// disagree with the score the player reports (e.g. pass at 50% a course that requires 80%).
+function buildManifest(title, files, masteryScore) {
   const id = 'COURSE-' + slugify(title).toUpperCase();
+  const mastery = (typeof masteryScore === 'number' && isFinite(masteryScore)) ? Math.round(masteryScore) : 70;
   const fileEls = files.map((f) => `      <file href="${xmlEscape(f)}"/>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <manifest identifier="${id}" version="1.0"
@@ -43,7 +46,7 @@ function buildManifest(title, files) {
       <title>${xmlEscape(title)}</title>
       <item identifier="ITEM-1" identifierref="RES-1" isvisible="true">
         <title>${xmlEscape(title)}</title>
-        <adlcp:masteryscore>50</adlcp:masteryscore>
+        <adlcp:masteryscore>${mastery}</adlcp:masteryscore>
       </item>
     </organization>
   </organizations>

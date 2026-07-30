@@ -1,0 +1,48 @@
+/* =====================================================================
+   SKIN: compact
+   Loaded after styles.css, before the per-course theme <style>.
+
+   Reduces the base type scale (~18-22%) so text-heavy slides read as
+   polished/professional rather than oversized. Player chrome (nav
+   buttons, control bar, menus, transcript) is left untouched since it
+   is already compact and further shrinking would hurt usability.
+   ===================================================================== */
+
+:root{
+  --fs-hero:64px; --fs-h1:52px; --fs-h1-lg:58px; --fs-h2:33px;
+  --fs-body-lg:27px; --fs-body:25px; --fs-small:23px; --fs-eyebrow:22px; --fs-stat:150px;
+}
+
+/* index cards (module/lesson index) */
+.index-item .it-kicker{font-size:17px;}
+.index-item .it-title{font-size:24px;}
+
+/* quiz */
+.q-question{font-size:27px;}
+.option .opt-text{font-size:21px;}
+.feedback .fb-head{font-size:20px;}
+.feedback .fb-body{font-size:19px;}
+.score-ring .pct{font-size:108px;}
+.score-ring .lbl{font-size:22px;}
+
+/* content slides: callouts, points, cards */
+.ct-callout{font-size:24px;}
+.ct-points li{font-size:24px;}
+.ct-card .ct-label{font-size:27px;}
+.ct-card .ct-text{font-size:21px;}
+.ct-solo .ct-callout{font-size:29px;}
+.ct-solo .ct-points li{font-size:27px;}
+
+/* drag & drop */
+.dd-prompt{font-size:22px;}
+.dd-slot-label{font-size:20px;}
+.dd-bin .dd-slot-label{font-size:22px;}
+.dd-item{font-size:20px;}
+.dd-status{font-size:19px;}
+
+/* video slide caption/course label + on-video subtitles */
+.video-slide .v-course{font-size:20px;}
+.cc-overlay span{font-size:26px;}
+
+/* CTAs */
+.start-btn,.exit-btn{font-size:26px;}

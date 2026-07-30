@@ -142,8 +142,90 @@ function parseFormatC(lines) {
   });
 }
 
+// ---- Format D (inline module tag + checkmark + [CORRECT]/[INCORRECT] rationale) ---------------
+//   Qn  Module M: <title> | Lesson L: <title> | Video V: <title>
+//   <question text>
+//   A) <text>  [✓ on the correct option]
+//   B) <text> ... D) <text>
+//   Correct Answer: X) <text>
+//   A [CORRECT]: <explanation>   /   B [INCORRECT]: <explanation>  ...
+function parseFormatD(lines) {
+  const qStart = /^Q\s*(\d+)\s+Module\s*(\d+)\s*:/i;
+  const isOpt = /^([A-D])\)\s*(.+?)\s*(✓)?\s*$/;
+  const blocks = []; let cur = null;
+  for (const raw of lines) {
+    const line = (raw || '').trim(); if (!line) continue;
+    const m = qStart.exec(line);
+    if (m) { cur = { n: +m[1], mod: +m[2], lines: [] }; blocks.push(cur); continue; }
+    if (cur) cur.lines.push(line);
+  }
+  return blocks.map((b) => {
+    const firstOptIx = b.lines.findIndex((l) => isOpt.test(l));
+    const bodyLines = (firstOptIx < 0 ? b.lines : b.lines.slice(0, firstOptIx)).filter(Boolean);
+    const text = bodyLines.join(' ').replace(/\s{2,}/g, ' ').trim();
+    const opts = {}; let correct = '';
+    for (const l of b.lines) {
+      const om = isOpt.exec(l);
+      if (om) { opts[om[1].toUpperCase()] = om[2].trim(); if (om[3]) correct = om[1].toUpperCase(); }
+    }
+    if (!correct) { for (const l of b.lines) { const cm = /^Correct Answer:\s*([A-D])\)/i.exec(l); if (cm) { correct = cm[1].toUpperCase(); break; } } }
+    const fb = {};
+    for (const l of b.lines) {
+      const fm = /^([A-D])\s*\[(?:CORRECT|INCORRECT)\]\s*:\s*(.*)$/i.exec(l);
+      if (fm) fb[fm[1].toUpperCase()] = fm[2].trim();
+    }
+    const order = ['A', 'B', 'C', 'D'].filter((ltr) => opts[ltr] != null);
+    const options = order.map((ltr) => ({ text: opts[ltr], correct: ltr === correct, feedback: fb[ltr] || '' }));
+    return { n: b.n, mod: b.mod, text, options };
+  });
+}
+
+// ---- Format E ("Question N - multiple choice, shuffle" + "A: .."/"*B: .." + "Feedback: .." + "Refer to Module M, Lesson L Video: ..") ---------------
+//   Question n - multiple choice, shuffle
+//   <question text>
+//   A: <text>
+//   Feedback: <explanation for A>
+//   Refer to Module M, Lesson L Video: <title>
+//   *B: <text>          <- leading "*" marks the correct option
+//   Feedback: <explanation for B>
+//   Refer to Module M, Lesson L Video: <title>
+//   C: <text>  ...  D: <text>  ...
+function parseFormatE(lines) {
+  const qStart = /^Question\s+(\d+)\b/i;
+  const isOpt = /^(\*)?\s*([A-D])\s*:\s*(.+)$/;
+  const blocks = []; let cur = null;
+  for (const raw of lines) {
+    const line = (raw || '').trim(); if (!line) continue;
+    const m = qStart.exec(line);
+    if (m) { cur = { n: +m[1], lines: [] }; blocks.push(cur); continue; }
+    if (cur) cur.lines.push(line);
+  }
+  return blocks.map((b) => {
+    const firstOptIx = b.lines.findIndex((l) => isOpt.test(l));
+    const bodyLines = (firstOptIx < 0 ? b.lines : b.lines.slice(0, firstOptIx)).filter(Boolean);
+    const text = bodyLines.join(' ').replace(/\s{2,}/g, ' ').trim();
+    const opts = []; let mod = null; let curOpt = null;
+    for (const l of b.lines) {
+      const om = isOpt.exec(l);
+      if (om) { curOpt = { letter: om[2].toUpperCase(), text: om[3].trim(), correct: !!om[1], feedback: '' }; opts.push(curOpt); continue; }
+      if (!curOpt) continue;
+      const fm = /^Feedback\s*:?\s*(.*)$/i.exec(l);
+      if (fm) { curOpt.feedback = (curOpt.feedback ? curOpt.feedback + ' ' : '') + fm[1].trim(); continue; }
+      const rm = /^Refer to Module\s*(\d+)/i.exec(l);
+      if (rm && !mod) { mod = +rm[1]; continue; }
+    }
+    const order = ['A', 'B', 'C', 'D'].filter((ltr) => opts.some((o) => o.letter === ltr));
+    const options = order.map((ltr) => { const o = opts.find((x) => x.letter === ltr); return { text: o.text, correct: o.correct, feedback: o.feedback }; });
+    return { n: b.n, mod, text, options };
+  });
+}
+
 async function parseAuto(file) {
   const lines = await rawLines(file);
+  const looksE = lines.some((l) => /^Question\s+\d+\s*-/i.test(l)) && lines.some((l) => /^\*?[A-D]\s*:/.test(l));
+  if (looksE) return parseFormatE(lines);
+  const looksD = lines.some((l) => /^Q\s*\d+\s+Module\s*\d+\s*:/i.test(l));   // inline "Qn  Module M:" tag
+  if (looksD) return parseFormatD(lines);
   const looksC = lines.some(isBulletOptLine) && lines.some((l) => /Correct Answer:/i.test(l));  // single-line "· A. · B." options
   if (looksC) return parseFormatC(lines);
   const looksB = lines.some((l) => /^Feedback\b/i.test(l));   // Format B uses standalone "Feedback" lines; A uses "Explanation for option"
@@ -182,7 +264,7 @@ async function loadQuestionsByModule(courseDir) {
   return { byModule, total, bad, files: files.map((f) => ({ file: path.basename(f.file), module: f.module })) };
 }
 
-module.exports = { loadQuestionsByModule, parseAuto, parseFormatA, parseFormatB, parseFormatC, findQuizFiles };
+module.exports = { loadQuestionsByModule, parseAuto, parseFormatA, parseFormatB, parseFormatC, parseFormatD, parseFormatE, findQuizFiles };
 
 if (require.main === module) {
   loadQuestionsByModule(path.resolve(process.argv[2] || '.')).then((r) => {

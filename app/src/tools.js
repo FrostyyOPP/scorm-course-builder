@@ -32,12 +32,14 @@ const TOOLS = {
   ffprobe: pick('SCORM_FFPROBE', path.join(RUNTIME, 'ffmpeg', 'ffprobe.exe'),          'ffprobe'),
   whisper: pick('SCORM_WHISPER', path.join(RUNTIME, 'whisper', 'Release', 'whisper-cli.exe'), 'whisper-cli'),
   whisperModel: pick('SCORM_WHISPER_MODEL', path.join(RUNTIME, 'whisper', 'ggml-base.en.bin'), ''),
+  whisperVadModel: pick('SCORM_WHISPER_VAD_MODEL', path.join(RUNTIME, 'whisper', 'ggml-silero-v5.1.2.bin'), ''),
 };
 
 TOOLS.vendored = {
   node: fs.existsSync(path.join(RUNTIME, 'node', 'node.exe')),
   ffmpeg: fs.existsSync(path.join(RUNTIME, 'ffmpeg', 'ffmpeg.exe')),
   whisper: fs.existsSync(path.join(RUNTIME, 'whisper', 'Release', 'whisper-cli.exe')),
+  whisperVad: fs.existsSync(path.join(RUNTIME, 'whisper', 'ggml-silero-v5.1.2.bin')),
 };
 
 module.exports = TOOLS;
