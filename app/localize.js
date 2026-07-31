@@ -320,9 +320,19 @@ async function stageCaption() {
   log(`caption: done, ${failed.length} failed`);
 }
 
+// A killed ffmpeg process (e.g. the session dying mid-run) can leave a file well past 10KB that
+// is still truncated - MP4 writes its moov atom (the index) last, so an interrupted encode is
+// unreadable even at a plausible-looking size. A size check alone let 7/42 corrupted files pass
+// as "done" on a resumed run once. Confirm the file actually parses instead.
+function isValidMp4(f) {
+  if (!fs.existsSync(f) || fs.statSync(f).size <= 10000) return false;
+  try { return execFileSync(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim().length > 0; }
+  catch (e) { return false; }
+}
+
 async function stageCompress() {
   const vids = walk(DIR.dub);
-  const todo = vids.filter(v => { const o = path.join(DIR.min, path.relative(DIR.dub, v)); return !(fs.existsSync(o) && fs.statSync(o).size > 10000); });
+  const todo = vids.filter(v => !isValidMp4(path.join(DIR.min, path.relative(DIR.dub, v))));
   if (!todo.length) return log(`compress: all ${vids.length} done`);
   log(`compress: ${todo.length}/${vids.length} @ ${C.compress}-way`);
   const failed = await pool(todo, C.compress, async (v) => {
@@ -330,8 +340,10 @@ async function stageCompress() {
     fs.mkdirSync(path.dirname(o), { recursive: true });
     await run(FFMPEG, ['-y', '-nostdin', '-i', v, '-vf', 'scale=-2:720', '-c:v', 'libx264', '-crf', '28',
       '-preset', 'veryfast', '-c:a', 'aac', '-b:a', '96k', o]);
+    if (!isValidMp4(o)) throw new Error(`${path.basename(o)}: ffmpeg exited but output does not parse as a valid MP4`);
   });
   log(`compress: done, ${failed.length} failed`);
+  if (failed.length) { failed.forEach(f => log(`   ! ${path.basename(f.item)}: ${f.err}`)); throw new Error(`${failed.length} clip(s) failed to compress cleanly - re-run to retry`); }
 }
 
 async function stagePackage() {
